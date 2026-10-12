@@ -62,11 +62,21 @@ export class CrDetailComponent implements OnInit {
 	/** Whether the current user may approve the loaded CR. */
 	get canApprove(): boolean {
 		// NOTE: this only looks at the CR status. The UI must also respect the user's permissions.
-		return this.detail?.status === 'PENDING_APPROVAL';
+		if (this.detail?.status !== 'PENDING_APPROVAL') {
+			return false;
+		}
+		// Make sure the user has the permission to approve (cr_a_u, cr_a_w, or cr_a_o)
+		const userPolicies = this.session.user?.policies ?? [];
+		return userPolicies.some((p) => p.startsWith('cr_a_'));
 	}
 
 	get canReject(): boolean {
-		return this.detail?.status === 'PENDING_APPROVAL';
+		if (this.detail?.status !== 'PENDING_APPROVAL') {
+			return false;
+		}
+		// Make sure the user has the permission to reject a pending request (cr_a_u, cr_a_w, or cr_a_o)
+		const userPolicies = this.session.user?.policies ?? [];
+		return userPolicies.some((p) => p.startsWith('cr_a_'));
 	}
 
 	fmt(amount: number): string {
