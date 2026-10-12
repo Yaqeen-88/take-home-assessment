@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CrApiService } from '../../api/cr-api.service';
 import { SessionService } from '../../session/session.service';
 import { CrDetail, TimelineEntry } from '../../models/cr.models';
@@ -26,7 +26,10 @@ export class CrDetailComponent implements OnInit {
 	submitting = false;
 	actionError?: string;
 	// TODO: add validation so the form is invalid until a reason is entered.
-	rejectControl = new FormControl('', { nonNullable: true });
+	rejectControl = new FormControl('', {
+		nonNullable: true,
+		validators: [Validators.required, Validators.pattern(/.*\S.*/)],
+	});
 
 	constructor(private readonly api: CrApiService, private readonly session: SessionService) {}
 
@@ -56,7 +59,11 @@ export class CrDetailComponent implements OnInit {
 	/** Approval timeline, oldest-first. */
 	get timeline(): TimelineEntry[] {
 		// TODO: return the audit entries ordered chronologically (oldest first).
-		return this.detail?.audit ?? [];
+		if (!this.detail?.audit) {
+			return [];
+		}
+
+		return [...this.detail.audit].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 	}
 
 	/** Whether the current user may approve the loaded CR. */
