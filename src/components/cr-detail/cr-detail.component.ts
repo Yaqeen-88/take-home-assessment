@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CrApiService } from '../../api/cr-api.service';
@@ -19,7 +19,7 @@ import { formatMoney } from '../../common/money.util';
 	imports: [CommonModule, ReactiveFormsModule],
 	templateUrl: './cr-detail.component.html',
 })
-export class CrDetailComponent implements OnInit {
+export class CrDetailComponent implements OnInit, OnChanges {
 	@Input() id!: string;
 
 	state: ViewState<CrDetail> = idle();
@@ -32,6 +32,12 @@ export class CrDetailComponent implements OnInit {
 	});
 
 	constructor(private readonly api: CrApiService, private readonly session: SessionService) {}
+
+	ngOnChanges(changes: SimpleChanges): void {
+		if (changes['id'] && !changes['id'].firstChange) {
+			void this.load();
+		}
+	}
 
 	ngOnInit(): void {
 		void this.load();
@@ -92,12 +98,41 @@ export class CrDetailComponent implements OnInit {
 
 	async approve(): Promise<void> {
 		// TODO: perform the approve action through the API and reflect the outcome in the view.
-		throw new Error('approve() not implemented');
+		if (!this.canApprove || this.submitting) {
+			return;
+		}
+
+		this.submitting = true;
+		this.actionError = undefined;
+
+		try {
+			const nowStr = new Date().toISOString();
+			const updatedCr = await this.api.approve(this.session.user, this.id, nowStr);
+			this.state = { status: 'loaded', data: updatedCr };
+		} catch (err) {
+			this.actionError = (err as Error).message;
+		} finally {
+			this.submitting = false;
+		}
 	}
 
 	async reject(): Promise<void> {
 		// TODO: require a valid rejectControl, then perform the reject action through the API and
 		//       reflect the outcome in the view.
-		throw new Error('reject() not implemented');
+		if (!this.canReject || this.submitting || this.rejectControl.invalid) {
+			return;
+		}
+
+		try {
+			const nowStr = new Date().toISOString();
+			const reasonTxt = this.rejectControl.value.trim();
+			const updatedCr = await this.api.reject(this.session.user, this.id, nowStr, reasonTxt);
+			this.state = { status: 'loaded', data: updatedCr };
+			this.rejectControl.reset();
+		} catch (err) {
+			this.actionError = (err as Error).message;
+		} finally {
+			this.submitting = false;
+		}
 	}
 }
