@@ -28,7 +28,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr *ngFor="let cr of visibleRows" class="cr-list__row" (click)="select.emit(cr.id)">
+			<tr *ngFor="let cr of visibleRows" class="cr-list__row" style="cursor: pointer;" (click)="select.emit(cr.id)">
 				<td>{{ cr.id }}</td>
 				<td>{{ cr.title }}</td>
 				<td><span class="cr-status" [attr.data-status]="cr.status">{{ cr.status }}</span></td>
@@ -36,4 +36,7 @@
 			</tr>
 		</tbody>
 	</table>
+	<p *ngIf="state.status === 'loaded' && visibleRows.length === 0" class="cr-list__empty-filter" >
+		No change requests match the active status filter.
+	</p>
 </section>
