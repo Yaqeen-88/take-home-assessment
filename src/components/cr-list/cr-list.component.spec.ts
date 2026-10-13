@@ -30,4 +30,33 @@ describe('CrListComponent', () => {
 		expect(fixture.nativeElement.querySelector('.cr-list__empty')).not.toBeNull();
 		expect(fixture.nativeElement.querySelector('.cr-list__table')).toBeNull();
 	});
+
+	it('filters the rows displayed when a specific status filter is chosen', async () => {
+			const fixture = await render(users.approver);
+			const comp = fixture.componentInstance;
+
+			// Force the active status filter to 'PENDING_APPROVAL'
+			comp.statusFilter = 'PENDING_APPROVAL';
+			fixture.detectChanges();
+
+			// Verify the DOM reacts by narrowing down the visible rows in the table
+			const filteredRows = fixture.nativeElement.querySelectorAll('.cr-list__row');
+			expect(filteredRows.length).toBe(1); // Only CR-1 is PENDING_APPROVAL in org-alpha
+			expect(filteredRows[0].textContent).toContain('CR-1');
+	});
+
+	it('renders a friendly fallback message when a status filter returns zero results', async () => {
+		const fixture = await render(users.approver);
+		const comp = fixture.componentInstance;
+
+		comp.statusFilter = 'CANCELLED';
+		fixture.detectChanges();
+
+		const table = fixture.nativeElement.querySelector('.cr-list__table');
+		const fallbackMessage = fixture.nativeElement.querySelector('.cr-list__empty-filter');
+
+		expect(table).toBeNull();
+		expect(fallbackMessage).toBeTruthy();
+		expect(fallbackMessage.textContent).toContain('No change requests match the active status filter.');
+	});
 });
