@@ -4,7 +4,7 @@ import { CrListComponent } from '../components/cr-list/cr-list.component';
 import { CrDetailComponent } from '../components/cr-detail/cr-detail.component';
 import { SessionService } from '../session/session.service';
 import { users } from '../api/fixtures';
-
+import { CrApiService } from '../api/cr-api.service';
 /**
  * Demo app shell that hosts the list + detail screens so you can click through the UI in a browser
  * (run `npm start`). The "Acting as" switcher changes the current user via SessionService and reloads
@@ -24,7 +24,7 @@ export class AppComponent {
 	selectedId: string | null = 'CR-1';
 	show = true;
 
-	constructor(public readonly session: SessionService) {}
+	constructor(public readonly session: SessionService, public readonly api: CrApiService) {}
 
 	switchUser(key: string): void {
 		this.session.user = users[key];

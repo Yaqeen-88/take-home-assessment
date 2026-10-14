@@ -1,5 +1,11 @@
 <header class="app-header">
 	<h1>Change Request Review</h1>
+
+	<label>
+		<input type="checkbox" [checked]="api.failNext" (change)="api.failNext = $any($event.target).checked">
+		Simulate Network Error
+	</label>
+
 	<label>
 		Acting as:
 		<select (change)="switchUser($any($event.target).value)">
